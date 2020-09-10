@@ -35,16 +35,15 @@ def unwrap_distributed(state_dict):
         new_state_dict[new_key] = value
     return new_state_dict
 
+downloaded = 0
+def show_progress(count, block_size, total_size):
+    global downloaded
+    downloaded += block_size
+    print("{}Mb/{}Mb\t\t".format(downloaded // 1024 // 1024, total_size // 1024 // 1024), end="\r")
+    if downloaded == total_size:
+        downloaded = 0
 
 def _download_checkpoint(checkpoint, force_reload):
-    downloaded = 0
-    def show_progress(count, block_size, total_size):
-        global downloaded
-        downloaded += block_size
-        print("{}Mb/{}Mb\t\t".format(downloaded // 1024 // 1024, total_size // 1024 // 1024), end="\r")
-        if downloaded == total_size:
-            downloaded = 0
-
     model_dir = os.path.join(torch.hub._get_torch_home(), 'checkpoints')
     if not os.path.exists(model_dir):
         os.makedirs(model_dir)
