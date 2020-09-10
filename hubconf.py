@@ -37,13 +37,21 @@ def unwrap_distributed(state_dict):
 
 
 def _download_checkpoint(checkpoint, force_reload):
+    downloaded = 0
+    def show_progress(count, block_size, total_size):
+        global downloaded
+        downloaded += block_size
+        print("{}Mb/{}Mb\t\t".format(downloaded // 1024 // 1024, total_size // 1024 // 1024), end="\r")
+        if downloaded == total_size:
+            downloaded = 0
+
     model_dir = os.path.join(torch.hub._get_torch_home(), 'checkpoints')
     if not os.path.exists(model_dir):
         os.makedirs(model_dir)
     ckpt_file = os.path.join(model_dir, os.path.basename(checkpoint))
     if not os.path.exists(ckpt_file) or force_reload:
         sys.stderr.write('Downloading checkpoint from {}\n'.format(checkpoint))
-        urllib.request.urlretrieve(checkpoint, ckpt_file)
+        urllib.request.urlretrieve(checkpoint, ckpt_file, show_progress)
     return ckpt_file
 
 
